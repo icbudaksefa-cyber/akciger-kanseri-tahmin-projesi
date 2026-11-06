@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Akciğer Kanseri Risk Değerlendirmesi</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="top-row">
+    <div class="brand">
+      <div class="brand-text">
+        <div class="kicker">GRUP 4 PROJESİ</div>
+        <h1>Akciğer Kanseri Risk Değerlendirmesi</h1>
+      </div>
+    </div>
+    <div class="theme-toggle">
+      <button id="theme-btn" onclick="toggleTheme()">Açık Tema ☀️</button>
+    </div>
+  </div>
+  <div class="hero">
+    <h2>Klinik verilerle anlık makine öğrenmesi tahmini</h2>
+    <p>Random Forest, KNN, Lojistik Regresyon ve Karar Ağacı modelleriyle risk durumunuzu hesaplayın.</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn" onclick="setTab('panel-predict')">Tahmin</button>
+    <button class="tab-btn active" onclick="setTab('panel-performance')">Model Performansı</button>
+    <button class="tab-btn" onclick="setTab('panel-charts')">Grafikler</button>
+    <button class="tab-btn" onclick="setTab('panel-about')">Proje Hakkında</button>
+    <button class="tab-btn" onclick="setTab('panel-xray')" style="background: var(--sky); color: white; border-color: var(--sky);">Röntgen Analizi 📸</button>
+  </div>
+</nav>
+
+<main>
+  <!-- 1. PENCERE: TAHMİN SAYFASI -->
+  <section id="panel-predict" class="panel">
+    <div class="card">
+      <h3>Temel Bilgiler</h3>
+      <div class="basics-row">
+        <div class="field">
+          <label>Cinsiyet</label>
+          <div class="gender-switch">
+            <button id="gender-f" class="active" onclick="setGender('F')">Kadın</button>
+            <button id="gender-m" onclick="setGender('M')">Erkek</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Yaş: <span id="age-value">55</span></label>
+          <input type="range" id="age-slider" min="18" max="90" value="55" oninput="updateAge(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Klinik Semptomlar (Evet/Hayır)</h3>
+      <div class="q-grid" id="question-grid"></div>
+      <div class="submit-row">
+        <button class="predict-btn" onclick="handlePredict()">Tahmini Hesapla</button>
+      </div>
+    </div>
+    
+    <div class="card" id="results-card" style="display:none;">
+      <h3>Tahmin Sonuçları</h3>
+      <div id="summary-banner" class="summary-banner"></div>
+    </div>
+  </section>
+
+  <!-- 2. PENCERE: PERFORMANS -->
+  <section id="panel-performance" class="panel active">
+    <div class="card">
+      <h3>Veri Seti Özeti</h3>
+      <p class="subtitle">Modellerin üzerinde eğitildiği veri setinin genel istatistikleri.</p>
+      <div class="data-badges">
+        <span class="badge">309 kişi (toplam)</span>
+        <span class="badge">247 eğitim / 62 test</span>
+        <span class="badge">270 VAR / 39 YOK</span>
+        <span class="badge">62.7 ort. yaş</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Model Karşılaştırma Tablosu</h3>
+      <div class="table-wrapper">
+        <table class="perf-table">
+          <thead>
+            <tr>
+              <th>MODEL</th>
+              <th>ACCURACY</th>
+              <th>PRECISION</th>
+              <th>RECALL</th>
+              <th>F1-SCORE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Random Forest <span class="star">★ En iyi</span></td>
+              <td>96.77%</td>
+              <td>98.33%</td>
+              <td>98.33%</td>
+              <td>98.33%</td>
+            </tr>
+            <tr><td>Karar Ağacı</td><td>96.77%</td><td>98.33%</td><td>98.33%</td><td>98.33%</td></tr>
+            <tr><td>KNN</td><td>95.16%</td><td>98.31%</td><td>96.67%</td><td>97.48%</td></tr>
+            <tr><td>Lojistik Regresyon</td><td>95.16%</td><td>96.72%</td><td>98.33%</td><td>97.52%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Hata (Confusion) Matrisleri</h3>
+      <div class="cm-grid">
+        <div class="cm-card"><h4>Random Forest</h4><div class="cm-row"><div class="cm-box correct"><span>1</span><small>Doğru Negatif</small></div><div class="cm-box wrong"><span>1</span><small>Yanlış Pozitif</small></div></div><div class="cm-row"><div class="cm-box wrong"><span>1</span><small>Yanlış Negatif</small></div><div class="cm-box correct"><span>59</span><small>Doğru Pozitif</small></div></div></div>
+        <div class="cm-card"><h4>Karar Ağacı</h4><div class="cm-row"><div class="cm-box correct"><span>1</span><small>Doğru Negatif</small></div><div class="cm-box wrong"><span>1</span><small>Yanlış Pozitif</small></div></div><div class="cm-row"><div class="cm-box wrong"><span>1</span><small>Yanlış Negatif</small></div><div class="cm-box correct"><span>59</span><small>Doğru Pozitif</small></div></div></div>
+        <div class="cm-card"><h4>KNN</h4><div class="cm-row"><div class="cm-box correct"><span>1</span><small>Doğru Negatif</small></div><div class="cm-box wrong"><span>1</span><small>Yanlış Pozitif</small></div></div><div class="cm-row"><div class="cm-box wrong"><span>2</span><small>Yanlış Negatif</small></div><div class="cm-box correct"><span>58</span><small>Doğru Pozitif</small></div></div></div>
+        <div class="cm-card"><h4>Lojistik Regresyon</h4><div class="cm-row"><div class="cm-box correct"><span>0</span><small>Doğru Negatif</small></div><div class="cm-box wrong"><span>2</span><small>Yanlış Pozitif</small></div></div><div class="cm-row"><div class="cm-box wrong"><span>1</span><small>Yanlış Negatif</small></div><div class="cm-box correct"><span>59</span><small>Doğru Pozitif</small></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. PENCERE: GRAFİKLER -->
+  <section id="panel-charts" class="panel">
+    <div class="card">
+      <h3>Model Doğruluk Oranları (Accuracy)</h3>
+      <canvas id="modelChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Özellik Önem Dereceleri (Feature Importance)</h3>
+      <canvas id="featureChart"></canvas>
+    </div>
+  </section>
+
+  <!-- 4. PENCERE: PROJE HAKKINDA -->
+  <section id="panel-about" class="panel">
+    <div class="card">
+      <h3>Proje Hakkında</h3>
+      <p style="line-height: 1.6;">Bu arayüz, bir makine öğrenmesi dersi ödevi kapsamında geliştirilen akciğer kanseri tahmin projesinin (309 kişilik veri seti, Random Forest/KNN/Lojistik Regresyon/Karar Ağacı modelleri) sonuçlarını etkileşimli olarak sunar.</p>
+    </div>
+    <div class="card">
+      <h3>Veri Setinin Sınırlılıkları</h3>
+      <p style="line-height: 1.6; color: var(--ink-soft);">309 kişilik veri setinde 270 kişi 'Var' (%87.4), yalnızca 39 kişi 'Yok' (%12.6) etiketine sahip. Random Forest ve Karar Ağacı, veri dengesizliğine karşı görece daha dayanıklı sonuçlar üretti.</p>
+    </div>
+    <div style="text-align: center; margin-top: 50px; margin-bottom: 20px;">
+      <p style="font-size: 0.95em; color: var(--ink-soft); margin-bottom: 30px;">Bu araç yalnızca eğitim amaçlıdır; tıbbi tanı yerine geçmez.</p>
+      <div style="font-size: 0.8em; letter-spacing: 2px; color: var(--sky); margin-bottom: 10px;">PROJE EKİBİ</div>
+      <p style="font-weight: 500; font-size: 1.1em;">Ceyda Çay &nbsp;&middot;&nbsp; Sefa İçbudak &nbsp;&middot;&nbsp; Ali Saadi Akkuş</p>
+    </div>
+  </section>
+
+  <!-- 5. PENCERE: RÖNTGEN ANALİZİ -->
+  <section id="panel-xray" class="panel">
+    <div class="card">
+      <h3>Yapay Zeka Destekli Röntgen Tarayıcı</h3>
+      <p class="subtitle">CNN modelimiz yüklediğiniz görselin önce röntgen olup olmadığını doğrular, ardından kanser risk olasılığını hesaplar.</p>
+      
+      <!-- Dosya Yükleme / Sürükle Bırak Alanı -->
+      <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="handleDrop(event)">
+        <input type="file" id="file-input" accept="image/png, image/jpeg, image/jpg" hidden onchange="handleFileUpload(event)">
+        <div id="upload-text">
+          <span style="font-size: 2.5em;">📥</span><br><br>
+          Görseli buraya sürükleyin veya <b>bilgisayardan seçin</b>.
+        </div>
+        <img id="image-preview" src="" alt="Yüklenen Görsel" style="display: none; max-width: 100%; max-height: 300px; border-radius: 8px; margin: 0 auto;">
+      </div>
+      
+      <button class="predict-btn" id="analyze-btn" style="display: none; background-color: var(--sky);" onclick="simulateXrayAnalysis()">Görüntüyü Analiz Et</button>
+    </div>
+
+    <!-- Analiz Sonucu -->
+    <div class="card" id="xray-results" style="display: none;">
+      <h3>CNN Model Çıktısı</h3>
+      <div id="xray-banner" class="summary-banner"></div>
+      <p id="xray-details" style="margin-top: 15px; line-height: 1.6; color: var(--ink-soft); font-size: 0.95em;"></p>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
